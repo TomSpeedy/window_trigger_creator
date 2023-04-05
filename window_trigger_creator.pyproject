@@ -1,0 +1,3 @@
+{
+    "files": ["controller.py","wfreader.py","form.ui","mainwindow.py","datamodel.py","nntrainer.py"]
+}

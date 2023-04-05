@@ -1,0 +1,11 @@
+{
+
+"learningRate" : 0.001,
+
+"hiddenLayerSizes" : [20, 20],
+"epochCount" : 5,
+"learningRateDecay" : "None",
+"optimizer" : "Adam",
+"dropout" : 0,
+"dataSplit" : {"training" : 0.8, "validation" : 0.1, "test" : 0.1}
+}
