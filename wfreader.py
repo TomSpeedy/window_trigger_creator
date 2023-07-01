@@ -10,10 +10,18 @@ class WfReader:
 
     def extractWindow(self, inputLine):
         inputTokens = inputLine.split(self.WINDOW_VALUE_SEPARATOR)
+        print(inputTokens)
+        NAN_VALUES = ["nan", "-nan", "NaN", "inf", "Inf", "-inf"]
         windowVector = []
         isVector = False
         for token in inputTokens:
             token = token.strip()
+            print(".",token,".")
+            if token == "":
+                continue
+            elif token in NAN_VALUES:
+                token = "0"
+
             if token == self.VECTOR_START_TOKEN:
                 isVector = True
                 vectorFeature = []

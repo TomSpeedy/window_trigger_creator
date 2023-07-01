@@ -16,14 +16,14 @@
   <widget class="QTabWidget" name="triggerTypeTabs">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>110</y>
-     <width>881</width>
+     <x>10</x>
+     <y>100</y>
+     <width>1001</width>
      <height>651</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>4</number>
    </property>
    <widget class="QWidget" name="manual_tab">
     <attribute name="title">
@@ -59,7 +59,7 @@
      <property name="title">
       <string>Import hyperparameter file:</string>
      </property>
-     <widget class="QLineEdit" name="nnHyperparamLineEdit">
+     <widget class="FileLineEdit" name="nnHyperparamLineEdit">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -72,7 +72,7 @@
      <widget class="QPushButton" name="nnBrowseHyperparamButton">
       <property name="geometry">
        <rect>
-        <x>420</x>
+        <x>410</x>
         <y>30</y>
         <width>80</width>
         <height>23</height>
@@ -88,8 +88,8 @@
       <rect>
        <x>10</x>
        <y>90</y>
-       <width>611</width>
-       <height>301</height>
+       <width>971</width>
+       <height>391</height>
       </rect>
      </property>
      <property name="title">
@@ -131,12 +131,369 @@
        <string>Save Trained Model</string>
       </property>
      </widget>
+     <widget class="QTextBrowser" name="nnConsoleTextBrowser">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>40</y>
+        <width>611</width>
+        <height>321</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="nnTrainingProgressLabel">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>20</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Training log:</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="lvq_tab">
     <attribute name="title">
      <string>LVQ trigger</string>
     </attribute>
+    <widget class="QGroupBox" name="lvqHyperparamGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>791</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Import hyperparameter file:</string>
+     </property>
+     <widget class="FileLineEdit" name="lvqHyperparamLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>361</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="lvqBrowseHyperparamButton">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>30</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="lvqClassesGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>981</width>
+       <height>371</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Select Classes For Trigger</string>
+     </property>
+     <widget class="QListWidget" name="lvqClassListWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>281</width>
+        <height>171</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="lvqStartTrainingButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>220</y>
+        <width>151</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start Training</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="lvqSaveModelButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>260</y>
+        <width>161</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save Trained Model</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="lvqConsoleTextBrowser">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>40</y>
+        <width>621</width>
+        <height>311</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="lvqTrainingProgressLabel">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>20</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Training log:</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="svm_tab">
+    <attribute name="title">
+     <string>SVM trigger</string>
+    </attribute>
+    <widget class="QGroupBox" name="svmHyperparamGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>791</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Import hyperparameter file:</string>
+     </property>
+     <widget class="FileLineEdit" name="svmHyperparamLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>361</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="svmBrowseHyperparamButton">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>30</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="svmClassesGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>981</width>
+       <height>371</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Select Classes For Trigger</string>
+     </property>
+     <widget class="QListWidget" name="svmClassListWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>281</width>
+        <height>171</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="svmStartTrainingButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>220</y>
+        <width>151</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start Training</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="svmSaveModelButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>260</y>
+        <width>161</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save Trained Model</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="svmConsoleTextBrowser">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>40</y>
+        <width>621</width>
+        <height>311</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="svmTrainingProgressLabel">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>20</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Training log:</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="one_svm_tab">
+    <attribute name="title">
+     <string>ONE CLASS SVM trigger</string>
+    </attribute>
+    <widget class="QGroupBox" name="oneSvmHyperparamGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>791</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Import hyperparameter file:</string>
+     </property>
+     <widget class="FileLineEdit" name="oneSvmHyperparamLineEdit">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>30</y>
+        <width>361</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="oneSvmBrowseHyperparamButton">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>30</y>
+        <width>80</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QGroupBox" name="oneSvmClassesGroupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>981</width>
+       <height>371</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Loaded classes:</string>
+     </property>
+     <widget class="QListWidget" name="oneSvmClassListWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>281</width>
+        <height>171</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="oneSvmStartTrainingButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>220</y>
+        <width>151</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Start Training</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="oneSvmSaveModelButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>260</y>
+        <width>161</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save Trained Model</string>
+      </property>
+     </widget>
+     <widget class="QTextBrowser" name="oneSvmConsoleTextBrowser">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>40</y>
+        <width>621</width>
+        <height>311</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="oneSvmTrainingProgressLabel">
+      <property name="geometry">
+       <rect>
+        <x>350</x>
+        <y>20</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Training log:</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QPushButton" name="browseInputButton">
@@ -152,7 +509,7 @@
     <string>Browse...</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="inputFileLineEdit">
+  <widget class="FileLineEdit" name="inputFileLineEdit">
    <property name="geometry">
     <rect>
      <x>140</x>
@@ -192,6 +549,13 @@
    </property>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FileLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filelineedit</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

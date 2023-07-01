@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget, QFileDialog
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -19,21 +19,48 @@ class MainWindow(QWidget):
 
         self.controller = Controller(self)
         self.ui.browseInputButton.clicked.connect(self.browseInputClicked)
-        self.ui.nnBrowseHyperparamButton.clicked.connect(self.browseHyperparamClicked)
+        self.ui.nnBrowseHyperparamButton.clicked.connect(self.browseNnHyperparamClicked)
+        self.ui.lvqBrowseHyperparamButton.clicked.connect(self.browseLvqHyperparamClicked)
+        self.ui.svmBrowseHyperparamButton.clicked.connect(self.browseSvmHyperparamClicked)
+        self.ui.oneSvmBrowseHyperparamButton.clicked.connect(self.browseOneSvmHyperparamClicked)
         self.ui.loadInputButton.clicked.connect(self.controller.loadInputClicked)
-        self.ui.inputFileLineEdit.setText("/home/tomas/MFF/DT/build-window_processor-Desktop_Qt_6_4_2_GCC_64bit-Debug/output/test_b.wf")
+        self.ui.nnSaveModelButton.clicked.connect(self.controller.saveNnTriggerClicked)
+        self.ui.lvqSaveModelButton.clicked.connect(self.controller.saveLvqTriggerClicked)
+        self.ui.svmSaveModelButton.clicked.connect(self.controller.saveSvmTriggerClicked)
+        self.ui.oneSvmSaveModelButton.clicked.connect(self.controller.saveOneSvmTriggerClicked)
+
+        self.ui.inputFileLineEdit.setText("/home/tomas/MFF/DT/window_processor/build/output/beam_data.wf")
+        self.ui.triggerTypeTabs.setVisible(False);
 
     def browseInputClicked(self):
         self.browseClicked("Window features (*.wf)", self.ui.inputFileLineEdit)
 
-    def browseHyperparamClicked(self):
+    def browseNnHyperparamClicked(self):
         self.browseClicked("Json hyperparameters (*.json)", self.ui.nnHyperparamLineEdit)
+
+    def browseLvqHyperparamClicked(self):
+        self.browseClicked("Json hyperparameters (*.json)", self.ui.lvqHyperparamLineEdit)
+
+    def browseSvmHyperparamClicked(self):
+        self.browseClicked("Json hyperparameters (*.json)", self.ui.svmHyperparamLineEdit)
+
+    def browseOneSvmHyperparamClicked(self):
+        self.browseClicked("Json hyperparameters (*.json)", self.ui.oneSvmHyperparamLineEdit)
+
+
+    def saveAsClicked(self):
+        selectedFile = QFileDialog.getSaveFileName( parent = self, caption = "Save as...")[0]
+        return selectedFile
 
     def browseClicked(self, filter, textBox):
         selectedFile = QFileDialog.getOpenFileName( parent = self, caption = "Open file", filter = filter)[0]
         if selectedFile != "":
             textBox.setText(selectedFile)
 
+    def showMessage(self, text):
+        messageBox = QMessageBox(self)
+        messageBox.setText(text)
+        messageBox.exec()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
