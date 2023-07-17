@@ -3,7 +3,7 @@
 #import numpy as np
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtWidgets import QMessageBox
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal, Slot, QObject, QMetaObject, Qt
 import os
 import json
 from pprint import pprint
@@ -12,21 +12,22 @@ import numpy as np
 import math
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from matplotlib import pyplot as plt
+from workerthread import Logger
 #import tensorflow_addons as tfa
 
-class NnTrainer():
+class NnTrainer(QObject):
+
     class Args():
         pass
-
+    logSignal = Signal(str)
     def __init__(self, mainWindow):
+        super().__init__()
         self.args = NnTrainer.Args()
         self.setDefaultHyperparams()
         self.mainWindow = mainWindow
-        self.logger = mainWindow.ui.nnConsoleTextBrowser
-        pass
+        self.logger = Logger(mainWindow.ui.nnConsoleTextBrowser, mainWindow)
+        self.logSignal.connect(self.logger.log)
 
-    def log(self,text):
-        self.logger.append(text)
 
     def setDefaultHyperparams(self):
         self.args.learningRate = 0.001
@@ -59,7 +60,7 @@ class NnTrainer():
                 messageBox = QMessageBox(self.mainWindow)
                 messageBox.setText(f"Hyperparameter name {hyperparamName} is not valid for this model. Skipping.")
                 messageBox.show()
-        pprint(vars(self.args))
+        #pprint(vars(self.args))
 
     def trainTestValSplitEqual(self, dataset):
         pTrain = self.args.dataSplit["training"]
@@ -68,7 +69,7 @@ class NnTrainer():
         return dataset.trainTestValSplitEqual(pTrain, pTest, pVal)
 
     def show_cm(self, y_true, y_pred, name):
-        cm_display = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred), display_labels= ["no_trigger", "trigger"],)
+        cm_display = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred, normalize = "true"), display_labels= ["no_trigger", "trigger"],)
         plt.rcParams['font.size'] = 16
         cm_display.plot()
         plt.title(name + " confusion matrix")
@@ -90,10 +91,10 @@ class NnTrainer():
         stds = npData[trainIndices, :].std(axis = 0)
         EPSILON = 0.0000001
         stds[np.abs(stds) < EPSILON] = 1
-        print(trainIndices.shape, testIndices.shape, valIndices.shape)
-        print("MEANS")
-        print(means)
-        print(stds)
+        #print(trainIndices.shape, testIndices.shape, valIndices.shape)
+        #print("MEANS")
+        #print(means)
+        #print(stds)
         train_sample_weights = np.ones(shape = len(trainIndices))
         train_sample_weights[train_sample_weights == 1] = self.args.triggerWeight
         train_sample_weights[train_sample_weights == 0] = self.args.untriggerWeight
@@ -147,15 +148,18 @@ class NnTrainer():
 
 
 class PrintLossCallback(tf.keras.callbacks.Callback):
-    def __init__(self, logger):
+    def __init__(self, trainer):
         super(PrintLossCallback, self).__init__()
-        self.logger = logger
+        self.trainer = trainer
     def on_train_batch_end(self, batch, logs = None):
-        self.logger.log(f"{logs}")
+        self.trainer.logSignal.emit(f"{logs}")
 
     def on_epoch_end(self, epoch, logs=None):
         #valLoss=logs.get('val_loss')  # get the validation loss for this epoch
-        self.logger.log(f"Validation after epoch {epoch}: {logs}")
+        #QMetaObject.invokeMethod(self, 'update_result_box', Qt.QueuedConnection,  QArgument<str>(str, f"Validation after epoch {epoch}: {logs}",))
+        self.trainer.logSignal.emit(f"Validation after epoch {epoch}: {logs}")
+    def update_result_box(self, message):
+        pass
 
 
 class ZScoreNormalizationLayer(tf.keras.layers.Layer):

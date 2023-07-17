@@ -53,10 +53,10 @@ class DataModel:
                 npLabels = np.concatenate([npLabels, np.repeat(0, windowCount)], axis = 0)
             windowCounts.append(windowCount)
         npData = np.nan_to_num(np.array(self.flattenWindows(), dtype = np.float32))[:, 1:] #ignore the zero-th feature
-        print("****************contains nan ", np.any(np.isnan(npData)))
+        #print("****************contains nan ", np.any(np.isnan(npData)))
         self.shape = npData.shape
-        print("SHAPE", npData.shape)
-        print(npData[0,:])
+        #print("SHAPE", npData.shape)
+        #print(npData[0,:])
         return npData, npLabels, np.array(windowCounts)
 
     def trainTestValSplitEqual(self, pTrain, pTest, pVal):

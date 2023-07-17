@@ -1,3 +1,3 @@
 {
-    "files": ["wfreader.py","filelineedit.py","controller.py","svmtrainer.py","form.ui","datamodel.py","nntrainer.py","lvq_converter.py","onesvmtrainer.py","mainwindow.py","lvqtrainer.py"]
+    "files": ["wfreader.py","lvq_converter.py","mainwindow.py","datamodel.py","controller.py","form.ui","lvqtrainer.py","svmtrainer.py","onesvmtrainer.py","filelineedit.py","nntrainer.py","workerthread.py"]
 }

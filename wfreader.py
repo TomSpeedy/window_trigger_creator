@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
-
+import os
 class WfReader:
     def __init__(self):
         self.PROPERTY_SEPARATOR = ":"
@@ -10,13 +10,13 @@ class WfReader:
 
     def extractWindow(self, inputLine):
         inputTokens = inputLine.split(self.WINDOW_VALUE_SEPARATOR)
-        print(inputTokens)
+        #print(inputTokens)
         NAN_VALUES = ["nan", "-nan", "NaN", "inf", "Inf", "-inf"]
         windowVector = []
         isVector = False
         for token in inputTokens:
             token = token.strip()
-            print(".",token,".")
+            #print(".",token,".")
             if token == "":
                 continue
             elif token in NAN_VALUES:
@@ -49,6 +49,8 @@ class WfReader:
     def readWfFile(self, inputFileName):
         #create (featureNames) dict<class, LIST of LIST>, where list either has doubles or vector of doubles
         featureMap = {}
+        if not os.path.exists(inputFileName):
+            raise Exception(f"The file {inputFileName} does not exist.")
         with open(inputFileName, "r") as fileStream:
             attributeNames = self.readAttributeNames(fileStream)
             line = fileStream.readline()

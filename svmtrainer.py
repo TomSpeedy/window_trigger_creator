@@ -13,7 +13,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
 from sklearn.metrics import f1_score
 from skl2onnx import __max_supported_opset__
-from libsvm import svm
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from matplotlib import pyplot as plt
 class SvmTrainer:
@@ -35,7 +34,7 @@ class SvmTrainer:
         self.args.kernel = "rbf"
         self.args.gamma = "auto"
     def show_cm(self, y_true, y_pred, name):
-        cm_display = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred), display_labels= ["no_trigger", "trigger"],)
+        cm_display = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred, normalize = "true"), display_labels= ["no_trigger", "trigger"])
         cm_display.plot()
         plt.title(name)
         plt.show()
@@ -80,6 +79,7 @@ class SvmTrainer:
         self.show_cm(npLabels[trainIndices], train_y, "Training")
         self.show_cm(npLabels[testIndices], test_y, "Test")
         #self.show_cm(npLabels[valIndices], val_y, "Validation")
+        self.log(f"Fitting model: {self.model}")
         self.log(f"Train accuracy {model.score(npData[trainIndices], npLabels[trainIndices])}")
         self.log(f"Test accuracy {model.score(npData[testIndices], npLabels[testIndices])}")
         #self.log(f"Test F1 score{f1_score(npLabels[testIndices], y_pred)}")

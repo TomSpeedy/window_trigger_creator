@@ -32,7 +32,7 @@ class LvqTrainer:
     def loadHyperparams(self, paramFile):
         if(paramFile == ""):
             return
-        if not os.path.isfile(paramFile):
+        elif not os.path.isfile(paramFile):
             messageBox = QMessageBox(self.mainWindow)
             messageBox.setText("Selected hyperparameter file does not exist")
             messageBox.show()

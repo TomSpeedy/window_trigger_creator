@@ -12,12 +12,12 @@ from controller import Controller
 
 
 class MainWindow(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, app, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        self.controller = Controller(self)
+        self.app = app
+        self.controller = Controller(self, app)
         self.ui.browseInputButton.clicked.connect(self.browseInputClicked)
         self.ui.nnBrowseHyperparamButton.clicked.connect(self.browseNnHyperparamClicked)
         self.ui.lvqBrowseHyperparamButton.clicked.connect(self.browseLvqHyperparamClicked)
@@ -30,6 +30,12 @@ class MainWindow(QWidget):
         self.ui.oneSvmSaveModelButton.clicked.connect(self.controller.saveOneSvmTriggerClicked)
 
         self.ui.inputFileLineEdit.setText("/home/tomas/MFF/DT/window_processor/build/output/beam_data.wf")
+        self.ui.inputFileLineEdit.setAcceptableSuffix(".wf")
+        self.ui.svmHyperparamLineEdit.setAcceptableSuffix(".json")
+        self.ui.lvqHyperparamLineEdit.setAcceptableSuffix(".json")
+        self.ui.oneSvmHyperparamLineEdit.setAcceptableSuffix(".json")
+        self.ui.nnHyperparamLineEdit.setAcceptableSuffix(".json")
+
         self.ui.triggerTypeTabs.setVisible(False);
 
     def browseInputClicked(self):
@@ -64,6 +70,6 @@ class MainWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = MainWindow()
+    widget = MainWindow(app)
     widget.show()
     sys.exit(app.exec())

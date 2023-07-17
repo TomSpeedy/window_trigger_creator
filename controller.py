@@ -2,7 +2,7 @@
 from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QCheckBox, QPushButton, QFileDialog
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtCore import Qt, QThread
-
+from workerthread import WorkerThread
 from wfreader import WfReader
 from datamodel import DataModel
 import os
@@ -20,8 +20,9 @@ import sklearn_lvq
 import subprocess
 
 class Controller:
-    def __init__(self, mainWindow):
+    def __init__(self, mainWindow, app):
         self.mainWindow = mainWindow
+        self.app = app
         self.reader = WfReader()
         self.nnTrainer = NnTrainer(mainWindow)
         self.lvqTrainer = LvqTrainer(mainWindow)
@@ -83,7 +84,7 @@ class Controller:
             return
         if(not saveFileName.endswith(NN_TRIGGER_SUFFIX)):
             saveFileName += NN_TRIGGER_SUFFIX
-        print(self.nnModel)
+        #print(self.nnModel)
         self.nnModel.save(SAVE_TF_MODEL_NAME)
 
         convertCmd = ["python3", "-m" "tf2onnx.convert", "--saved-model", SAVE_TF_MODEL_NAME, "--output", saveFileName]
@@ -101,7 +102,7 @@ class Controller:
             return
         if(not saveFileName.endswith(LVQ_TRIGGER_SUFFIX)):
             saveFileName += LVQ_TRIGGER_SUFFIX
-        print(self.dataModel.shape)
+        #print(self.dataModel.shape)
         initial_type = [("input", FloatTensorType([None, 26]))]
         lvq_onnx = convert_sklearn(self.lvqModel, initial_types=initial_type)
         with open(saveFileName, "wb") as file:
@@ -120,7 +121,7 @@ class Controller:
             return
         if(not saveFileName.endswith(SVM_TRIGGER_SUFFIX)):
             saveFileName += SVM_TRIGGER_SUFFIX
-        print(self.dataModel.shape)
+        #print(self.dataModel.shape)
         initial_type = [("input", FloatTensorType([None, 26]))]
         allClassesList = self.mainWindow.ui.nnClassListWidget
         triggerClasses = [allClassesList.item(itemIndex).text() for itemIndex in range(allClassesList.count())
@@ -142,7 +143,7 @@ class Controller:
             return
         if(not saveFileName.endswith(ONE_SVM_TRIGGER_SUFFIX)):
             saveFileName += ONE_SVM_TRIGGER_SUFFIX
-        print(self.dataModel.shape)
+        #print(self.dataModel.shape)
         initial_type = [("input", FloatTensorType([None, 26]))]
         oneSvmOnnx = convert_sklearn(self.oneSvmModel, initial_types = initial_type, verbose = 2, target_opset={'':18, 'ai.onnx.ml':2} )
         with open(saveFileName, "wb") as file:
@@ -234,28 +235,32 @@ class Controller:
 
 
     def loadInputClicked(self):
-
-        self.dataModel = DataModel(self.reader, self.mainWindow.ui.inputFileLineEdit.text())
-
+        try:
+            self.dataModel = DataModel(self.reader, self.mainWindow.ui.inputFileLineEdit.text())
+        except Exception as ex:
+            self.mainWindow.showMessage(str(ex))
         self.loadManualUi()
         self.loadNnUi()
-        self.loadLvqUi()
+        #self.loadLvqUi()
         self.loadSvmUi()
         self.loadOneSvmUi()
-        self.mainWindow.ui.triggerTypeTabs.setVisible(True);
+        self.mainWindow.ui.triggerTypeTabs.setVisible(True)
+        self.mainWindow.ui.triggerTypeTabs.removeTab(4)
 
     def nnStartTraining(self):
         self.nnTrainer.loadHyperparams(self.mainWindow.ui.nnHyperparamLineEdit.text())
         allClassesList = self.mainWindow.ui.nnClassListWidget
         selectedClassesStr = [allClassesList.item(itemIndex).text() for itemIndex in range(allClassesList.count())
             if allClassesList.item(itemIndex).checkState() == Qt.Checked]
-        #thread = QThread()
+
+        #QtConcurrent::run(self.nnTrainer.train, self.dataModel, selectedClassesStr)
+        self.thread =  WorkerThread(self.nnTrainer.train, self.dataModel, selectedClassesStr)
         #self.nnTrainer.moveToThread(thread)
-        #thread.started.connect(lambda : self.nnTrainer.train(self.dataModel, selectedClassesStr))
+        #self.thread.started.connect(lambda : self.nnTrainer.train(self.dataModel, selectedClassesStr))
 
         #thread = Thread(target = self.nnTrainer.train, args = (self.dataModel, selectedClassesStr))
-        #thread.start()
-        self.nnModel = self.nnTrainer.train(self.dataModel, selectedClassesStr)
+        self.thread.run();
+        #self.nnModel = self.nnTrainer.train(self.dataModel, selectedClassesStr)
 
     def lvqStartTraining(self):
         self.lvqTrainer.loadHyperparams(self.mainWindow.ui.lvqHyperparamLineEdit.text())
@@ -276,5 +281,5 @@ class Controller:
         allClassesList = self.mainWindow.ui.oneSvmClassListWidget
         selectedClassesStr = [allClassesList.item(itemIndex).text() for itemIndex in range(allClassesList.count())]
         self.oneSvmModel = self.oneSvmTrainer.train(self.dataModel, selectedClassesStr)
-        print("HERE")
+        #print("HERE")
 
