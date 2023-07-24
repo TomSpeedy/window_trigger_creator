@@ -2,6 +2,7 @@
 from skl2onnx import update_registered_converter
 from skl2onnx.algebra.onnx_ops import OnnxMatMul, OnnxSub
 from skl2onnx.common.data_types import guess_numpy_type
+#WIP conversion of the LVQ model to ONNX
 def lvqModelShape(operator):
     op = operator.raw_operator
     input_type = operator.inputs[0].type.__class__

@@ -10,7 +10,8 @@ from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox
 from ui_form import Ui_MainWindow
 from controller import Controller
 
-
+# Represents the View in MVC model
+# handles GUI operation
 class MainWindow(QWidget):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -18,6 +19,7 @@ class MainWindow(QWidget):
         self.ui.setupUi(self)
         self.app = app
         self.controller = Controller(self, app)
+        #connect all signals with slots
         self.ui.browseInputButton.clicked.connect(self.browseInputClicked)
         self.ui.nnBrowseHyperparamButton.clicked.connect(self.browseNnHyperparamClicked)
         self.ui.lvqBrowseHyperparamButton.clicked.connect(self.browseLvqHyperparamClicked)
@@ -29,7 +31,7 @@ class MainWindow(QWidget):
         self.ui.svmSaveModelButton.clicked.connect(self.controller.saveSvmTriggerClicked)
         self.ui.oneSvmSaveModelButton.clicked.connect(self.controller.saveOneSvmTriggerClicked)
 
-        self.ui.inputFileLineEdit.setText("/home/tomas/MFF/DT/window_processor/build/output/beam_data.wf")
+        #self.ui.inputFileLineEdit.setText("/home/tomas/MFF/DT/window_processor/build/output/beam_data.wf")
         self.ui.inputFileLineEdit.setAcceptableSuffix(".wf")
         self.ui.svmHyperparamLineEdit.setAcceptableSuffix(".json")
         self.ui.lvqHyperparamLineEdit.setAcceptableSuffix(".json")

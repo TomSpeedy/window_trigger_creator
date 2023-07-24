@@ -1,22 +1,22 @@
 # This Python file uses the following encoding: utf-8
 
 import os
+#process the file with window features
 class WfReader:
     def __init__(self):
+        #initialize the token separators
         self.PROPERTY_SEPARATOR = ":"
         self.WINDOW_VALUE_SEPARATOR = " "
         self.VECTOR_START_TOKEN = "["
         self.VECTOR_END_TOKEN = "]"
-
+    #read a single window from datastream
     def extractWindow(self, inputLine):
         inputTokens = inputLine.split(self.WINDOW_VALUE_SEPARATOR)
-        #print(inputTokens)
         NAN_VALUES = ["nan", "-nan", "NaN", "inf", "Inf", "-inf"]
         windowVector = []
         isVector = False
         for token in inputTokens:
             token = token.strip()
-            #print(".",token,".")
             if token == "":
                 continue
             elif token in NAN_VALUES:
@@ -38,7 +38,7 @@ class WfReader:
     def extractValue(self, inputLine):
 
         return inputLine[inputLine.find(self.PROPERTY_SEPARATOR) + 1:].strip()
-
+    #parse the names of the attributes
     def readAttributeNames(self, fileStream):
             attributeCount = int(self.extractValue(fileStream.readline()))
             attributeNames = []
@@ -47,7 +47,7 @@ class WfReader:
             return attributeNames
 
     def readWfFile(self, inputFileName):
-        #create (featureNames) dict<class, LIST of LIST>, where list either has doubles or vector of doubles
+        #create a mapping: className -> List of windows
         featureMap = {}
         if not os.path.exists(inputFileName):
             raise Exception(f"The file {inputFileName} does not exist.")

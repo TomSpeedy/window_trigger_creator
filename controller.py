@@ -18,22 +18,28 @@ from skl2onnx.algebra.onnx_ops import OnnxMatMul, OnnxSub
 from onnx.defs import onnx_opset_version
 import sklearn_lvq
 import subprocess
-
+#Controller from the MVC model
+#handles the processing of user signals and facilitates more extensive computations (model training)
 class Controller:
+    FEATURE_VECT_LEN = 26
     def __init__(self, mainWindow, app):
         self.mainWindow = mainWindow
         self.app = app
+        #initialize I/O processor
         self.reader = WfReader()
+        #initialize classes used for training
         self.nnTrainer = NnTrainer(mainWindow)
         self.lvqTrainer = LvqTrainer(mainWindow)
         self.svmTrainer = SvmTrainer(mainWindow)
         self.oneSvmTrainer = OneSvmTrainer(mainWindow)
+        #connect the handlers for training start
         mainWindow.ui.nnStartTrainingButton.clicked.connect(self.nnStartTraining)
         mainWindow.ui.lvqStartTrainingButton.clicked.connect(self.lvqStartTraining)
         mainWindow.ui.svmStartTrainingButton.clicked.connect(self.svmStartTraining)
         mainWindow.ui.oneSvmStartTrainingButton.clicked.connect(self.oneSvmStartTraining)
 
     def saveManualTriggerClicked(self):
+        #separators used when serializing manual trigger
         EMPTY_FIELD_STR = ""
         ANY_VALUE_STR = "*"
         START_INTERVAL_STR = "["
@@ -42,19 +48,23 @@ class Controller:
         BOUND_SEPARATOR_STR = ":"
         VECTOR_SEPARATOR_STR = "\n"
         MANUAL_SUFFIX = ".ift"
+        #retrieve the save file
         saveFile = QFileDialog.getSaveFileName(parent = self.mainWindow, caption = "Save as/Append to", filter = "Interval features trigger (*.ift)")[0]
         if saveFile == EMPTY_FIELD_STR:
             return
+        #append the suffix if necessary
         if not saveFile.endswith(MANUAL_SUFFIX):
             saveFile += MANUAL_SUFFIX
         with open(saveFile, "a") as outputStream:
 
             if not os.path.isfile(saveFile) or os.stat(saveFile).st_size == 0:
+                #write the names of the features
                 for scalarAtribute in self.dataModel.scalarAttributes():
                     outputStream.write(scalarAtribute)
                     outputStream.write(VALUE_SEPARATOR_STR)
                 outputStream.write(VECTOR_SEPARATOR_STR)
             groupBox = self.mainWindow.ui.manualAttributeGroupBox
+            #write the list of interval values, using placeholder '*' where it was not specified
             for index, (lowerBoundEdit, upperBoundEdit) in enumerate(zip(groupBox.fromEdits, groupBox.toEdits)):
                 if index != 0:
                     outputStream.write(VALUE_SEPARATOR_STR);
@@ -71,7 +81,7 @@ class Controller:
                 outputStream.write(END_INTERVAL_STR)
             outputStream.write(VECTOR_SEPARATOR_STR)
         outputStream.close()
-
+    #serialize the nn trigger
     def saveNnTriggerClicked(self):
         NN_TRIGGER_SUFFIX = ".nnt"
         SAVE_TF_MODEL_NAME = "./temp/tfModel"
@@ -84,12 +94,12 @@ class Controller:
             return
         if(not saveFileName.endswith(NN_TRIGGER_SUFFIX)):
             saveFileName += NN_TRIGGER_SUFFIX
-        #print(self.nnModel)
+        #temporarily store the tensorflow model
         self.nnModel.save(SAVE_TF_MODEL_NAME)
-
+        #convert the tensorflow serialized model to onnx format
         convertCmd = ["python3", "-m" "tf2onnx.convert", "--saved-model", SAVE_TF_MODEL_NAME, "--output", saveFileName]
         subprocess.run(convertCmd)
-
+    #serialize trained lvq model - currently there are errors (lvq is only inherited from sklearn)
     def saveLvqTriggerClicked(self):
         LVQ_TRIGGER_SUFFIX = ".lvqt"
         SAVE_LVQ_MODEL_NAME = "./temp/lvqModel"
@@ -103,13 +113,14 @@ class Controller:
         if(not saveFileName.endswith(LVQ_TRIGGER_SUFFIX)):
             saveFileName += LVQ_TRIGGER_SUFFIX
         #print(self.dataModel.shape)
-        initial_type = [("input", FloatTensorType([None, 26]))]
+        initial_type = [("input", FloatTensorType([None, self.FEATURE_VECT_LEN]))]
         lvq_onnx = convert_sklearn(self.lvqModel, initial_types=initial_type)
         with open(saveFileName, "wb") as file:
             file.write(lvq_onnx.SerializeToString())
         #convertCmd = ["python3", "-m" "tf2onnx.convert", "--saved-model", SAVE_TF_MODEL_NAME, "--output", saveFileName]
         #subprocess.run(convertCmd)
 
+    #serialize the trained svm model
     def saveSvmTriggerClicked(self):
         SVM_TRIGGER_SUFFIX = ".svmt"
         if not hasattr(self, "svmModel"):
@@ -122,16 +133,18 @@ class Controller:
         if(not saveFileName.endswith(SVM_TRIGGER_SUFFIX)):
             saveFileName += SVM_TRIGGER_SUFFIX
         #print(self.dataModel.shape)
-        initial_type = [("input", FloatTensorType([None, 26]))]
+        initial_type = [("input", FloatTensorType([None, self.FEATURE_VECT_LEN]))]
         allClassesList = self.mainWindow.ui.nnClassListWidget
         triggerClasses = [allClassesList.item(itemIndex).text() for itemIndex in range(allClassesList.count())
             if allClassesList.item(itemIndex).checkState() == Qt.Checked]
         npData, npLabels, npClassSizes = self.dataModel.toNumpy(triggerClasses)
         npData = (npData - npData.mean(axis = 0))/npData.std(axis = 0)
+        #no need to store the model temporary, we can directly call convert_sklearn
         svm_onnx = convert_sklearn(self.svmModel, initial_types = initial_type, verbose = 2, target_opset={'':18, 'ai.onnx.ml':2} )
         with open(saveFileName, "wb") as file:
             file.write(svm_onnx.SerializeToString())
 
+    #similarly to SVM above
     def saveOneSvmTriggerClicked(self):
         ONE_SVM_TRIGGER_SUFFIX = ".osvmt"
         if not hasattr(self, "oneSvmModel"):
@@ -144,18 +157,19 @@ class Controller:
         if(not saveFileName.endswith(ONE_SVM_TRIGGER_SUFFIX)):
             saveFileName += ONE_SVM_TRIGGER_SUFFIX
         #print(self.dataModel.shape)
-        initial_type = [("input", FloatTensorType([None, 26]))]
+        initial_type = [("input", FloatTensorType([None, self.FEATURE_VECT_LEN]))]
         oneSvmOnnx = convert_sklearn(self.oneSvmModel, initial_types = initial_type, verbose = 2, target_opset={'':18, 'ai.onnx.ml':2} )
         with open(saveFileName, "wb") as file:
             file.write(oneSvmOnnx.SerializeToString())
 
+    #clears the layout of interval manual trigger
     def clearManualLayout(self, layout):
         if layout == None:
             return
         for i in reversed(range(layout.count())):
             layout.itemAt(i).widget().setParent(None)
 
-
+    #setup all widgets for manual trigger
     def loadManualUi(self):
         groupBox = self.mainWindow.ui.manualAttributeGroupBox
         groupBox.fromEdits = []
@@ -186,17 +200,20 @@ class Controller:
 
         self.mainWindow.ui.manualAttributeGroupBox.setLayout(layout)
 
+    #setup all widgets for nn trigger
     def loadNnUi(self):
         ui = self.mainWindow.ui
         ui.nnClassListWidget.clear()
+        #load the existing data classes
         for windowClass in self.dataModel.classes():
             ui.nnClassListWidget.addItem(windowClass)
-
+        #make the items checkable
         for classItemIndex in range(ui.nnClassListWidget.count()):
             classItem = ui.nnClassListWidget.item(classItemIndex)
             classItem.setFlags(classItem.flags() | Qt.ItemIsUserCheckable)
             classItem.setCheckState(Qt.Unchecked)
 
+    #setup all widgets for SVM trigger
     def loadSvmUi(self):
         ui = self.mainWindow.ui
         ui.svmClassListWidget.clear()
@@ -208,6 +225,7 @@ class Controller:
             classItem.setFlags(classItem.flags() | Qt.ItemIsUserCheckable)
             classItem.setCheckState(Qt.Unchecked)
 
+    #setup all widgets for one class SVM
     def loadOneSvmUi(self):
         ui = self.mainWindow.ui
         ui.oneSvmClassListWidget.clear()
@@ -219,6 +237,7 @@ class Controller:
             classItem.setFlags(classItem.flags() | Qt.ItemIsUserCheckable)
             classItem.setCheckState(Qt.Unchecked)
 
+    #setup all widgets for LVQ training
     def loadLvqUi(self):
         ui = self.mainWindow.ui
         ui.lvqClassListWidget.clear()
@@ -241,26 +260,22 @@ class Controller:
             self.mainWindow.showMessage(str(ex))
         self.loadManualUi()
         self.loadNnUi()
-        #self.loadLvqUi()
+        #self.loadLvqUi() - problems with conversion
         self.loadSvmUi()
         self.loadOneSvmUi()
         self.mainWindow.ui.triggerTypeTabs.setVisible(True)
         self.mainWindow.ui.triggerTypeTabs.removeTab(4)
 
+    #the methods below run the training of the corresponding model
     def nnStartTraining(self):
         self.nnTrainer.loadHyperparams(self.mainWindow.ui.nnHyperparamLineEdit.text())
         allClassesList = self.mainWindow.ui.nnClassListWidget
         selectedClassesStr = [allClassesList.item(itemIndex).text() for itemIndex in range(allClassesList.count())
             if allClassesList.item(itemIndex).checkState() == Qt.Checked]
 
-        #QtConcurrent::run(self.nnTrainer.train, self.dataModel, selectedClassesStr)
+        #training in separate thread to preserve responsiveness
         self.thread =  WorkerThread(self.nnTrainer.train, self.dataModel, selectedClassesStr)
-        #self.nnTrainer.moveToThread(thread)
-        #self.thread.started.connect(lambda : self.nnTrainer.train(self.dataModel, selectedClassesStr))
-
-        #thread = Thread(target = self.nnTrainer.train, args = (self.dataModel, selectedClassesStr))
         self.thread.run();
-        #self.nnModel = self.nnTrainer.train(self.dataModel, selectedClassesStr)
 
     def lvqStartTraining(self):
         self.lvqTrainer.loadHyperparams(self.mainWindow.ui.lvqHyperparamLineEdit.text())

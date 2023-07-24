@@ -13,13 +13,13 @@ import math
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from matplotlib import pyplot as plt
 from workerthread import Logger
-#import tensorflow_addons as tfa
-
+#training of the neural network
 class NnTrainer(QObject):
 
     class Args():
         pass
     logSignal = Signal(str)
+
     def __init__(self, mainWindow):
         super().__init__()
         self.args = NnTrainer.Args()
@@ -60,14 +60,15 @@ class NnTrainer(QObject):
                 messageBox = QMessageBox(self.mainWindow)
                 messageBox.setText(f"Hyperparameter name {hyperparamName} is not valid for this model. Skipping.")
                 messageBox.show()
-        #pprint(vars(self.args))
 
+    #a simple wrapper around smae-name method of the dataset
     def trainTestValSplitEqual(self, dataset):
         pTrain = self.args.dataSplit["training"]
         pTest = self.args.dataSplit["test"]
         pVal = self.args.dataSplit["validation"]
         return dataset.trainTestValSplitEqual(pTrain, pTest, pVal)
 
+    #displays the confusion matrix after training
     def show_cm(self, y_true, y_pred, name):
         cm_display = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred, normalize = "true"), display_labels= ["no_trigger", "trigger"],)
         plt.rcParams['font.size'] = 16
@@ -75,6 +76,7 @@ class NnTrainer(QObject):
         plt.title(name + " confusion matrix")
         plt.show()
 
+    #run the training with data augmentation
     def train(self, dataset, triggerClasses, model = None):
         SHUFFLE_BUFFER_SIZE = 1024
         def extract_labels(example, label):
@@ -91,10 +93,6 @@ class NnTrainer(QObject):
         stds = npData[trainIndices, :].std(axis = 0)
         EPSILON = 0.0000001
         stds[np.abs(stds) < EPSILON] = 1
-        #print(trainIndices.shape, testIndices.shape, valIndices.shape)
-        #print("MEANS")
-        #print(means)
-        #print(stds)
         train_sample_weights = np.ones(shape = len(trainIndices))
         train_sample_weights[train_sample_weights == 1] = self.args.triggerWeight
         train_sample_weights[train_sample_weights == 0] = self.args.untriggerWeight
@@ -131,9 +129,8 @@ class NnTrainer(QObject):
         self.show_cm(npLabels[trainIndices], train_y, "Training")
         self.show_cm(npLabels[testIndices], test_y, "Test")
         self.show_cm(npLabels[valIndices], val_y, "Validation")
-        #print("RESULT DTYPE ", result.dtype)
         return model
-
+    #handle the class imbalance
     def ballance_dataset(self, dataset):
         ds_untrigger = dataset.filter(lambda x, y, weight: tf.math.equal(y,0))
         ds_trigger = dataset.filter(lambda x, y, weight: tf.math.equal(y,1))
@@ -146,7 +143,7 @@ class NnTrainer(QObject):
         return ds_untrigger.concatenate(ds_trigger)
 
 
-
+#display the loss in the window, a custom callback can be done for this purpose
 class PrintLossCallback(tf.keras.callbacks.Callback):
     def __init__(self, trainer):
         super(PrintLossCallback, self).__init__()
@@ -161,7 +158,7 @@ class PrintLossCallback(tf.keras.callbacks.Callback):
     def update_result_box(self, message):
         pass
 
-
+#normalize all data received on input
 class ZScoreNormalizationLayer(tf.keras.layers.Layer):
     def __init__(self, mean, std):
         super(ZScoreNormalizationLayer, self).__init__()
@@ -178,7 +175,9 @@ class ZScoreNormalizationLayer(tf.keras.layers.Layer):
     def from_config(cls, config):
         return cls(mean = config["mean"], std = config["std"])
 
+
 class Model(tf.keras.Model):
+    #initialize hyperparams
     def __init__(self, args, trainDataset, mean, std):
         super().__init__()
         self.hiddenLayers = [ZScoreNormalizationLayer(mean, std)]
@@ -222,7 +221,6 @@ class Model(tf.keras.Model):
 
     @tf.function
     def __call__(self, inputs, training = True):
-        #TODO create model
         output = inputs
         for hiddenLayer in self.hiddenLayers:
             output = hiddenLayer(output)
@@ -231,7 +229,6 @@ class Model(tf.keras.Model):
 
     @tf.function
     def call(self, inputs, training = True):
-        #TODO create model
         output = inputs
         for hiddenLayer in self.hiddenLayers:
             output = hiddenLayer(output)

@@ -11,7 +11,7 @@ from sklearn.svm import SVC, OneClassSVM
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from skl2onnx import __max_supported_opset__
-
+#trains the one class SVM model, similar to SVM
 class OneSvmTrainer:
     class Args():
         pass

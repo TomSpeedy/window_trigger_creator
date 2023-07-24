@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 from PySide6.QtCore import QThread, Signal, Slot, QObject, QMetaObject, Qt
 
-
+# simple worker which can run a function in a thread
 class WorkerThread(QThread):
     def __init__(self, func, *args):
         super().__init__()

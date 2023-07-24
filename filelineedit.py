@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 from PySide6.QtWidgets import QLineEdit
-
+#custom lineedit which can be used for drag and drop input
 class FileLineEdit(QLineEdit):
     allowAllSuffixes = True
     def __init__(self, parent):

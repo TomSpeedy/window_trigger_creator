@@ -8,7 +8,7 @@ from pprint import pprint
 import tensorflow as tf
 import numpy as np
 import math
-
+#WIP a simple class for training of teh LVQ model
 class LvqTrainer:
     class Args():
         pass
@@ -28,7 +28,7 @@ class LvqTrainer:
         self.args.dataSplit = {"training" : 0.8, "test" : 0.2, "validation" : 0.0}
         self.args.maxIter = 2500
         self.args.beta = 2
-
+    #parse hyperparameters from a file
     def loadHyperparams(self, paramFile):
         if(paramFile == ""):
             return
